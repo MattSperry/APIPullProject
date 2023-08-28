@@ -1,7 +1,7 @@
 public without sharing class PokeAPICallout {
   private static final String POKE_URL = 'https://pokeapi.co/api/v2/pokemon/';
 
-  @InvocableMethod(label='Pokemon API Call')
+  @InvocableMethod(label='Pokemon API Call' description='Generates pokemon listed in the flow on the current Account')
   public static void makeGetCallout(List<PokemonData> pokemonDataList) {
     Http http = new Http();
 
