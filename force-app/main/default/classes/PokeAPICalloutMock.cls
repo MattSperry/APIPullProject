@@ -1,5 +1,6 @@
-public class PokeAPICalloutMock implements HttpCalloutMock {
-  public HTTPResponse respond(HTTPRequest req) {
+@IsTest
+global class PokeAPICalloutMock implements HttpCalloutMock {
+  global HTTPResponse respond(HTTPRequest req) {
     HttpResponse response = new HttpResponse();
     response.setHeader('Content-Type', 'application/json');
 
