@@ -10,24 +10,26 @@ private class PokeAPICalloutTest {
   static void testMakeGetCalloutSuccess() {
     // Create Pokemon Data
     Account testAccount = [SELECT Id FROM Account WHERE Name = 'SOLVD' LIMIT 1];
-    Pokemon__c testPokemon = new Pokemon__c(Name = 'snorlax', Account__c = testAccount.Id);
-    insert testPokemon;
 
     // Create Pokemon Data
     PokeAPICallout.PokemonData pokemonData = new PokeAPICallout.PokemonData();
-    pokemonData.pokemonName = testPokemon.Name;
     pokemonData.accountId = testAccount.Id;
+    pokemonData.numPokemon = 10;
     List<PokeAPICallout.PokemonData> pokemonDataList = new List<PokeAPICallout.PokemonData>();
     pokemonDataList.add(pokemonData);
 
     // Run Test
     Test.startTest();
-    Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock());
+    Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock(true));
     PokeAPICallout.makeGetCallout(pokemonDataList);
     Test.stopTest();
 
     // Verify results
-    System.assertEquals(1, [SELECT COUNT() FROM Pokemon__c WHERE Name = 'snorlax'], 'should return 1 Pokemon object');
+    System.assertEquals(
+      10,
+      [SELECT COUNT() FROM Pokemon__c WHERE Account__c = :testAccount.Id],
+      'should return 10 Pokemon objects'
+    );
   }
   @IsTest
   static void testMakeGetCalloutFailure() {
@@ -35,21 +37,21 @@ private class PokeAPICalloutTest {
     Account testAccount = [SELECT Id FROM Account WHERE Name = 'SOLVD' LIMIT 1];
 
     PokeAPICallout.PokemonData pokemonData = new PokeAPICallout.PokemonData();
-    pokemonData.pokemonName = 'nonexistent_pokemon'; // Simulate a nonexistent Pokemon
     pokemonData.accountId = testAccount.Id;
+    pokemonData.numPokemon = 7;
     List<PokeAPICallout.PokemonData> pokemonDataList = new List<PokeAPICallout.PokemonData>();
     pokemonDataList.add(pokemonData);
 
     // Run Test
     Test.startTest();
-    Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock());
+    Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock(false));
     PokeAPICallout.makeGetCallout(pokemonDataList);
     Test.stopTest();
 
     // Verify results
     System.assertEquals(
       0,
-      [SELECT COUNT() FROM Pokemon__c WHERE Name = 'snorlax'],
+      [SELECT COUNT() FROM Pokemon__c WHERE Account__c = :testAccount.Id],
       'should not return a Pokemon object'
     );
   }
