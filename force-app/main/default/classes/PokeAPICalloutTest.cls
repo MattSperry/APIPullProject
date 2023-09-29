@@ -7,48 +7,50 @@ private class PokeAPICalloutTest {
     insert testAccount;
   }
   @IsTest
-  static void testMakeGetCalloutSuccess() {
-    // Create Pokemon Data
+  static void testSuccessfulCallout() {
+    // Get test account
     Account testAccount = [SELECT Id FROM Account WHERE Name = 'SOLVD' LIMIT 1];
+    // Create test data
+    List<PokeAPICallout.PokemonData> testData = new List<PokeAPICallout.PokemonData>();
+    PokeAPICallout.PokemonData testDataItem = new PokeAPICallout.PokemonData();
+    testDataItem.numPokemon = 5;
+    testDataItem.accountId = testAccount.Id;
+    testData.add(testDataItem);
 
-    // Create Pokemon Data
-    PokeAPICallout.PokemonData pokemonData = new PokeAPICallout.PokemonData();
-    pokemonData.accountId = testAccount.Id;
-    pokemonData.numPokemon = 10;
-    List<PokeAPICallout.PokemonData> pokemonDataList = new List<PokeAPICallout.PokemonData>();
-    pokemonDataList.add(pokemonData);
-
-    // Run Test
-    Test.startTest();
+    // Set up mock callout response
     Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock(true));
-    PokeAPICallout.makeGetCallout(pokemonDataList);
+
+    // Call the method to test
+    Test.startTest();
+    PokeAPICallout.makeGetCallout(testData);
     Test.stopTest();
 
-    // Verify results
     System.assertEquals(
-      10,
+      5,
       [SELECT COUNT() FROM Pokemon__c WHERE Account__c = :testAccount.Id],
-      'should return 10 Pokemon objects'
+      'Unexpected number of Pokemon records created.'
     );
   }
+
   @IsTest
-  static void testMakeGetCalloutFailure() {
-    // Create Pokemon Data for a nonexistent Pokemon
+  static void testFailedCallout() {
+    // Get test account
     Account testAccount = [SELECT Id FROM Account WHERE Name = 'SOLVD' LIMIT 1];
+    // Create test data
+    List<PokeAPICallout.PokemonData> testData = new List<PokeAPICallout.PokemonData>();
+    PokeAPICallout.PokemonData testDataItem = new PokeAPICallout.PokemonData();
+    testDataItem.numPokemon = 5;
+    testDataItem.accountId = testAccount.Id;
+    testData.add(testDataItem);
 
-    PokeAPICallout.PokemonData pokemonData = new PokeAPICallout.PokemonData();
-    pokemonData.accountId = testAccount.Id;
-    pokemonData.numPokemon = 7;
-    List<PokeAPICallout.PokemonData> pokemonDataList = new List<PokeAPICallout.PokemonData>();
-    pokemonDataList.add(pokemonData);
-
-    // Run Test
-    Test.startTest();
+    // Set up mock callout response
     Test.setMock(HttpCalloutMock.class, new PokeAPICalloutMock(false));
-    PokeAPICallout.makeGetCallout(pokemonDataList);
+
+    // Call the method to test
+    Test.startTest();
+    PokeAPICallout.makeGetCallout(testData);
     Test.stopTest();
 
-    // Verify results
     System.assertEquals(
       0,
       [SELECT COUNT() FROM Pokemon__c WHERE Account__c = :testAccount.Id],
